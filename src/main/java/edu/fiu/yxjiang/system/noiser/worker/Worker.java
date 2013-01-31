@@ -82,19 +82,19 @@ public class Worker implements MessageListener{
 	}
 	
 	class NoiseExecutor extends Thread {
-		private int duration;
+		private int durationInSec;
 		private String type;
 		
 		public NoiseExecutor(Task task) {
-			this.duration = 1000 * (task.getEndTime() - task.getStartTime());
+			this.durationInSec = task.getEndTime() - task.getStartTime();
 			this.type = task.getType();
 		}
 		
 		public void run() {
 			NoiseMaker noiseMaker = null;
 			if(type.equals("cpu")) {
-				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
-				noiseMaker = new CPUEater(duration);
+				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, durationInSec);
+				noiseMaker = new CPUEater(durationInSec);
 				noiseMaker.start();
 			}
 			else if(type.equals("memory")) {
@@ -114,15 +114,15 @@ public class Worker implements MessageListener{
 						fw.close();
 					}
 					
-					Runtime.getRuntime().exec("sh memoryEater.sh " + duration);
+					Runtime.getRuntime().exec("sh memoryEater.sh " + durationInSec);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
+				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, durationInSec);
 			}
 			
 			try {
-				Thread.sleep(duration * 1000);
+				Thread.sleep(durationInSec * 1000);
 				if(noiseMaker != null) {
 					System.out.println("\tStop...");
 					noiseMaker.stopNoiseMaker();

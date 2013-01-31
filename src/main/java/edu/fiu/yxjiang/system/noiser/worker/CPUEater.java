@@ -11,12 +11,12 @@ public class CPUEater extends NoiseMaker{
 	
 	private int availableCores;
 	private Thread threads[];
-	private int duration;
+	private int durationInMillisec;
 	private volatile Object lock = new Object();
 	
 	public CPUEater(int duration) {
 		super();
-		this.duration = duration;
+		this.durationInMillisec = duration * 1000;
 		availableCores = Runtime.getRuntime().availableProcessors();
 		System.out.printf("\tThere are [%d] cores available.\n", availableCores);
 		threads = new Thread[availableCores];
@@ -28,7 +28,7 @@ public class CPUEater extends NoiseMaker{
 			threads[i].start();
 		}
 		try {
-			Thread.sleep(duration);
+			Thread.sleep(durationInMillisec);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

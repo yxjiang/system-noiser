@@ -86,7 +86,7 @@ public class Worker implements MessageListener{
 		private String type;
 		
 		public NoiseExecutor(Task task) {
-			this.duration = task.getEndTime() - task.getStartTime();
+			this.duration = 1000 * (task.getEndTime() - task.getStartTime());
 			this.type = task.getType();
 		}
 		
@@ -94,7 +94,8 @@ public class Worker implements MessageListener{
 			NoiseMaker noiseMaker = null;
 			if(type.equals("cpu")) {
 				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
-				noiseMaker = new CPUEater();
+				noiseMaker = new CPUEater(duration);
+				noiseMaker.start();
 			}
 			else if(type.equals("memory")) {
 				try {
@@ -119,15 +120,13 @@ public class Worker implements MessageListener{
 				}
 				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
 			}
-			if(noiseMaker != null) {
-				noiseMaker.start();
-			}
+			
 			try {
 				Thread.sleep(duration * 1000);
 				if(noiseMaker != null) {
 					System.out.println("\tStop...");
 					noiseMaker.stopNoiseMaker();
-					Thread.sleep(10);
+					Thread.sleep(100);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();

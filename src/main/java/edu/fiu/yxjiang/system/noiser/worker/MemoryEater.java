@@ -59,8 +59,8 @@ public class MemoryEater extends NoiseMaker {
 		List<ArrayList<Double>> memoryConsumer = new ArrayList<ArrayList<Double>>();
 		while (true) {
 			refresh();
-			if (freeMemory > (double) totalMemory * 0.2) {
-				memoryConsumer.add(new ArrayList<Double>(300000000));
+			if (freeMemory + bufferMemory + cacheMemory > (double) totalMemory * 0.3) {
+				memoryConsumer.add(new ArrayList<Double>(1000000000));
 			}
 			printMemInfo();
 

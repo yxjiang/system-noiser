@@ -1,5 +1,7 @@
 package edu.fiu.yxjiang.system.noiser.worker;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 
@@ -91,27 +93,44 @@ public class Worker implements MessageListener{
 		public void run() {
 			NoiseMaker noiseMaker = null;
 			if(type.equals("cpu")) {
+				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
 				noiseMaker = new CPUEater();
-				System.out.printf("At time (%d), execute [%s] noise.\n", new Date().getTime() / 1000, this.type);
 			}
 			else if(type.equals("memory")) {
 				try {
+					//	Generate a shell script on demand
+					String memoryEaterSh = "./memoryEater.sh";
+					File shFile = new File(memoryEaterSh);
+					if(false == shFile.exists()) {
+						System.out.println("\tGenerate memory eater script on demand.");
+						FileWriter fw = new FileWriter(shFile);
+						StringBuffer scriptContent = new StringBuffer("cd classes\n");
+						scriptContent.append("memory=$(free -g | head -n2 | tail -n1 | tr -s ' ' | cut -d ' ' -f2)\n");
+						scriptContent.append("unit=g\n");
+						scriptContent.append("java -cp . -Xmx$memory$unit edu.fiu.yxjiang.system.noiser.worker.MemoryEater $1");
+						
+						fw.write(scriptContent.toString());
+						fw.close();
+					}
+					
 					Runtime.getRuntime().exec("sh memoryEater.sh " + duration);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.out.printf("At time (%d), execute [%s] noise.\n", new Date().getTime() / 1000, this.type);
+				System.out.printf("At time (%d), execute [%s] noise for %d seconds.\n", new Date().getTime() / 1000, this.type, duration);
 			}
 			if(noiseMaker != null) {
 				noiseMaker.start();
 			}
 			try {
 				Thread.sleep(duration * 1000);
+				if(noiseMaker != null) {
+					System.out.println("\tStop...");
+					noiseMaker.stopNoiseMaker();
+					Thread.sleep(10);
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
-			if(noiseMaker != null) {
-				noiseMaker.stopNoiseMaker();
 			}
 			System.out.printf("At time (%d), stop [%s] noise.\n", new Date().getTime() / 1000, this.type);
 		}
